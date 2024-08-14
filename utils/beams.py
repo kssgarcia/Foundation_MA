@@ -170,4 +170,6 @@ def beamBeso(L=10, H=10, E=206.8e9, v=0.28, nx=20, ny=20, dirs=np.array([]), pos
     loads[:, 1] = dirs[:,0]
     loads[:, 2] = dirs[:,1]
     BC = nodes[nodes[:, 3] == -1, 0]
-    return nodes, mats, els, loads, BC
+    found_nodes = nodes[(x<=4)&(y>=H/2 - 2)&(x>=-4), 0]
+
+    return nodes, mats, els, loads, found_nodes, BC

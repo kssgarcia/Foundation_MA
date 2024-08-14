@@ -18,7 +18,7 @@ t = 0.0001 # Threshold for error
 
 dirs = np.array([[0,-1]])
 positions = np.array([[61,30]])
-nodes, mats, els, loads, BC = beamBeso(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
+nodes, mats, els, loads, found_nodes, BC = beamBeso(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
 
 elsI, nodesI = np.copy(els), np.copy(nodes) # Copy mesh
 IBC, UG, _ = preprocessing(nodes, mats, els, loads) # Calculate boundary conditions and global stiffness matrix
@@ -34,6 +34,8 @@ V_opt = Vi.sum() * 0.50 # Optimal volume
 # Initialize variables.
 ELS = None
 mask = np.ones(els.shape[0], dtype=bool) # Mask of elements to be removed
+# found_elements = [i for i, el in enumerate(els[:,-4:]) if any(node in el for node in found_nodes)]
+# mask[found_elements] = True
 sensi_I = None  
 C_h = np.zeros(niter) # History of compliance
 error = 1000 
@@ -105,5 +107,11 @@ pos.fields_plot(ELS, nodes, UC, E_nodes=E_nodes, S_nodes=S_nodes)
 fill_plot = np.ones(E_nodes.shape[0])
 plt.figure()
 tri = pos.mesh2tri(nodes, ELS)
+plt.tricontourf(tri, fill_plot, cmap='binary')
+plt.axis("image");
+
+fill_plot = np.ones(E_nodes.shape[0])
+plt.figure()
+tri = pos.mesh2tri(nodes, elsI)
 plt.tricontourf(tri, fill_plot, cmap='binary')
 plt.axis("image");

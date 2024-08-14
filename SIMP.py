@@ -56,7 +56,7 @@ found_elements = [i for i, el in enumerate(els[:,-4:]) if any(node in el for nod
 rho[found_elements] = 1
 
 # Update material properties
-mask_foundation = rho > 0.95
+mask_foundation = rho >= 0.95
 mask_soil = rho < 0.95
 
 mats[mask_foundation, 0] = Emax  # Update Young's modulus
@@ -107,18 +107,14 @@ for _ in range(niter):
     rho_old[:] = rho
     rho[:], g = optimality_criteria(nx, ny, rho, d_c, g)
 
-    # mask_foundation = rho >= 0.95
-    # mask_soil = rho < 0.95
-    # print(rho.sum(), rho_old.sum())
-    # print(np.count_nonzero(mask_foundation))
-    # print(np.count_nonzero(mask_soil))
+    # Update material properties
+    mask_foundation = rho >= 0.95
+    mask_soil = rho < 0.95
 
-    # # Update values
-    # mats[mask_foundation, 0] = Emax  # Update Young's modulus
-    # mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
-
-    # mats[mask_soil, 0] = Emin  # Update Young's modulus
-    # mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
+    mats[mask_foundation, 0] = Emax  # Update Young's modulus
+    mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
+    mats[mask_soil, 0] = Emin  # Update Young's modulus
+    mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
 
     # Compute the change
     change = np.linalg.norm(rho.reshape(nx*ny,1)-rho_old.reshape(nx*ny,1),np.inf)
