@@ -5,6 +5,57 @@ import solidspy.postprocesor as pos
 import solidspy.solutil as sol      
 import solidspy.uelutil as uel 
 
+def sparse_assem(elements, mats, neq, assem_op, nodes):
+    """
+    Assembles the global stiffness matrix
+    using a sparse storing scheme
+
+    Parameters
+    ----------
+    elements : ndarray (int)
+      Array with the number for the nodes in each element.
+    mats    : ndarray (float)
+      Array with the material profiles.
+    neq : int
+      Number of active equations in the system.
+    assem_op : ndarray (int)
+      Assembly operator.
+    uel : callable function (optional)
+      Python function that returns the local stiffness matrix.
+    kloc : ndarray 
+      Stiffness matrix of a single element
+
+    Returns
+    -------
+    stiff : sparse matrix (float)
+      Array with the global stiffness matrix in a sparse
+      Compressed Sparse Row (CSR) format.
+    """
+    rows = []
+    cols = []
+    stiff_vals = []
+    nels = elements.shape[0]
+    for ele in range(nels):
+        params = tuple(mats[elements[ele, 0], :])
+        elcoor = nodes[elements[ele, -4:], 1:3]
+        kloc, _ = uel.elast_quad4(elcoor, params)
+        kloc_ = kloc * mats[elements[ele, 0], 0]
+        ndof = kloc.shape[0]
+        dme = assem_op[ele, :ndof]
+        for row in range(ndof):
+            glob_row = dme[row]
+            if glob_row != -1:
+                for col in range(ndof):
+                    glob_col = dme[col]
+                    if glob_col != -1:
+                        rows.append(glob_row)
+                        cols.append(glob_col)
+                        stiff_vals.append(kloc_[row, col])
+
+    stiff = coo_matrix((stiff_vals, (rows, cols)), shape=(neq, neq)).tocsr()
+
+    return stiff
+
 def is_equilibrium(nodes, mats, els, loads):
     """
     Check if the system is in equilibrium

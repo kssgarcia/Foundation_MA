@@ -38,7 +38,7 @@ def sparse_assem(elements, mats, neq, assem_op, nodes):
         params = tuple(mats[elements[ele, 0], :])
         elcoor = nodes[elements[ele, -4:], 1:3]
         kloc, _ = uel.elast_quad4(elcoor, params)
-        kloc_ = kloc * mats[elements[ele, 0], 2]
+        kloc_ = kloc * mats[elements[ele, 0], 0]
         ndof = kloc.shape[0]
         dme = assem_op[ele, :ndof]
         for row in range(ndof):
@@ -244,71 +244,3 @@ def sensitivity_els(nodes, mats, els, UC, nx, ny):
     sensi_number = (np.dot(UC[els[:,-4:]].reshape(nx*ny,8),kloc) * UC[els[:,-4:]].reshape(nx*ny,8) ).sum(1)
 
     return sensi_number
-
-def sensitivity_nodes(nodes, adj_nodes, centers, sensi_els):
-    """
-    Calculate the sensitivity of each node.
-    
-    Parameters
-    ----------
-    nodes : ndarray
-        Array with models nodes
-    adj_nodes : ndarray
-        Adjacency matrix of nodes
-    centers : ndarray
-        Array with center of elements
-    sensi_els : ndarra
-        Sensitivity of each element without filter
-        
-    Returns
-    -------
-    sensi_nodes : ndarray
-        Sensitivity of each nodes
-    """
-    sensi_nodes = []
-    for n in nodes:
-        connected_els = adj_nodes[int(n[0])]
-        if connected_els.shape[0] > 1:
-            delta = centers[connected_els] - n[1:3]
-            r_ij = np.linalg.norm(delta, axis=1) # We can remove this line and just use a constant because the distance is always the same
-            w_i = 1/(connected_els.shape[0] - 1) * (1 - r_ij/r_ij.sum())
-            sensi = (w_i * sensi_els[connected_els]).sum(axis=0)
-        else:
-            sensi = sensi_els[connected_els[0]]
-        sensi_nodes.append(sensi)
-    sensi_nodes = np.array(sensi_nodes)
-
-    return sensi_nodes
-
-def sensitivity_filter(nodes, centers, sensi_nodes, r_min):
-    """
-    Performe the sensitivity filter.
-    
-    Parameters
-    ----------
-    nodes : ndarray
-        Array with models nodes
-    sensi_nodes : ndarray
-        Array with nodal sensitivity
-    centers : ndarray
-        Array with center of elements
-    r_min : ndarra
-        Minimum distance 
-        
-    Returns
-    -------
-    sensi_els : ndarray
-        Sensitivity of each element with filter
-    """
-    sensi_els = []
-    for i, c in enumerate(centers):
-        delta = nodes[:,1:3]-c
-        r_ij = np.linalg.norm(delta, axis=1)
-        omega_i = (r_ij < r_min)
-        w = 1/(omega_i.sum() - 1) * (1 - r_ij[omega_i]/r_ij[omega_i].sum())
-        sensi_els.append((w*sensi_nodes[omega_i]).sum()/w.sum())
-        
-    sensi_els = np.array(sensi_els)
-    sensi_els = sensi_els/sensi_els.max()
-
-    return sensi_els

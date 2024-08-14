@@ -2,10 +2,12 @@
 import matplotlib.pyplot as plt # Package for plotting
 import numpy as np # Package for scientific computing
 
+from scipy.sparse.linalg import spsolve
+import solidspy.assemutil as ass # Solidspy 1.1.0
+import solidspy.postprocesor as pos 
 from utils.beams import beamBeso # Functions for mesh generation
 from utils.BESO_utils import is_equilibrium, preprocessing, postprocessing, protect_els, del_node, volume, sensitivity_els, adjacency_nodes, center_els, sensitivity_nodes, sensitivity_filter
 # Solidspy 1.1.0
-import solidspy.postprocesor as pos # SolidsPy package for postprocessing
 np.seterr(divide='ignore', invalid='ignore') # Ignore division by zero error
 
 length = 60
