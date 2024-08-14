@@ -59,7 +59,7 @@ def beam(L=10, H=10, E=206.8e9, v=0.28, nx=20, ny=20, dirs=np.array([]), positio
     
     return nodes, mats, els, loads, found_nodes
 
-def beamNormal(L=10, H=10, E=206.8e9, v=0.28, nx=20, ny=20, dirs=np.array([]), positions=np.array([])):
+def beamSimp(L=10, H=10, E=206.8e9, v=0.28, nx=20, ny=20, dirs=np.array([]), positions=np.array([])):
     """
     Make the mesh for a cuadrilateral model with cantilever beam's contrains.
 
@@ -117,3 +117,57 @@ def beamNormal(L=10, H=10, E=206.8e9, v=0.28, nx=20, ny=20, dirs=np.array([]), p
     found_nodes = nodes[(x<=4)&(y>=H/2 - 2)&(x>=-4), 0]
     
     return nodes, mats, els, loads, found_nodes
+
+def beamBeso(L=10, H=10, E=206.8e9, v=0.28, nx=20, ny=20, dirs=np.array([]), positions=np.array([])):
+    """
+    Make the mesh for a cuadrilateral model with cantilever beam's constrains.
+
+    Parameters
+    ----------
+    L : float, optional
+        Length of the beam, by default 10
+    H : float, optional
+        Height of the beam, by default 10
+    E : float, optional
+        Young's modulus, by default 206.8e9
+    v : float, optional
+        Poisson's ratio, by default 0.28
+    nx : int, optional
+        Number of elements in the x direction, by default 20
+    ny : int, optional
+        Number of elements in the y direction, by default 20
+    dirs : ndarray, optional
+        An array with the directions of the loads, by default empty array. [[0,1],[1,0],[0,-1]]
+    positions : ndarray, optional
+        An array with the positions of the loads, by default empty array. [[61,30], [1,30], [30, 1]]
+
+    Returns
+    -------
+    nodes : ndarray
+        Array of nodes
+    mats : ndarray
+        Array of material properties
+    els : ndarray
+        Array of elements
+    loads : ndarray
+        Array of loads
+    """
+    x, y, els = pre.rect_grid(L, H, nx, ny)
+    mats = np.zeros((els.shape[0], 3))
+    mats[:] = [E,v,1]
+    nodes = np.zeros(((nx + 1)*(ny + 1), 5))
+    nodes[:, 0] = range((nx + 1)*(ny + 1))
+    nodes[:, 1] = x
+    nodes[:, 2] = y
+    nodes[(x==-L/2), 3:] = -1
+    nodes[(x==L/2), 3] = -1
+    nodes[(y==-H/2), -1] = -1
+
+    loads = np.zeros((dirs.shape[0], 3), dtype=int)
+    node_index = nx*positions[:,0]+(positions[:,0]-positions[:,1])
+
+    loads[:, 0] = node_index
+    loads[:, 1] = dirs[:,0]
+    loads[:, 2] = dirs[:,1]
+    BC = nodes[nodes[:, 3] == -1, 0]
+    return nodes, mats, els, loads, BC

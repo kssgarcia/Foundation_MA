@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 
 # from utils.beams import beam, beamNormal
-from utils.beams import beam, beamNormal
+from utils.beams import beamSimp
 from utils.SIMP_utils import sparse_assem, optimality_criteria, density_filter, center_els, sensi_el
 
 # Start the timer
@@ -34,7 +34,7 @@ dirs = np.array([[0,-1]])
 positions = np.array([[61,30]])
 # dirs = np.array([[0,-1], [0,1], [1,0]])
 # positions = np.array([[61,30], [1,30], [30, 1]])
-nodes, mats, els, loads, found_nodes = beamNormal(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
+nodes, mats, els, loads, found_nodes = beamSimp(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
 
 # Initialize the design variables
 change = 10 # Change in the design variable

@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt # Package for plotting
 import numpy as np # Package for scientific computing
 
-from utils.beams import beam, beamNormal
+from utils.beams import beamBeso # Functions for mesh generation
 from utils.BESO_utils import is_equilibrium, preprocessing, postprocessing, protect_els, del_node, volume, sensitivity_els, adjacency_nodes, center_els, sensitivity_nodes, sensitivity_filter
 # Solidspy 1.1.0
 import solidspy.postprocesor as pos # SolidsPy package for postprocessing
@@ -10,21 +10,20 @@ np.seterr(divide='ignore', invalid='ignore') # Ignore division by zero error
 
 length = 60
 height = 60
-nx = n_elem
-ny= n_elem
-niter = 60
-ER = 0.005 # Removal ratio increment
+nx = 60
+ny= 60
+niter = 20
+ER = 0.01 # Removal ratio increment
 t = 0.0001 # Threshold for error
-Emin=1e-9 # Minimum young modulus of the material
-Emax=1.0 # Maximum young modulus of the material
 
 dirs = np.array([[0,-1]])
 positions = np.array([[61,30]])
-nodes, mats, els, loads, found_nodes = beamNormal(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
+nodes, mats, els, loads, BC = beamBeso(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
 
 elsI, nodesI = np.copy(els), np.copy(nodes) # Copy mesh
 IBC, UG, _ = preprocessing(nodes, mats, els, loads) # Calculate boundary conditions and global stiffness matrix
 UCI, E_nodesI, S_nodesI = postprocessing(nodes, mats[:,:2], els, IBC, UG) # Calculate displacements, strains and stresses
+
 
 r_min = np.linalg.norm(nodes[0,1:3] - nodes[1,1:3]) * 1 # Radius for the sensitivity filter
 adj_nodes = adjacency_nodes(nodes, els) # Adjacency nodes
@@ -99,6 +98,7 @@ for i in range(niter):
 
     # Save the sensitvity number for the next iteration
     sensi_I = sensi_number.copy()
+# %%
 
 pos.fields_plot(elsI, nodes, UCI, E_nodes=E_nodesI, S_nodes=S_nodesI) 
 pos.fields_plot(ELS, nodes, UC, E_nodes=E_nodes, S_nodes=S_nodes) 
@@ -108,4 +108,3 @@ plt.figure()
 tri = pos.mesh2tri(nodes, ELS)
 plt.tricontourf(tri, fill_plot, cmap='binary')
 plt.axis("image");
-
