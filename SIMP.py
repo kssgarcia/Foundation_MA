@@ -1,6 +1,5 @@
 # %%
 import time
-import random
 import numpy as np
 from scipy.sparse.linalg import spsolve
 import solidspy.assemutil as ass # Solidspy 1.1.0
@@ -10,7 +9,8 @@ import aux_functions as aux             # Rutinas externas al programa y creadas
 import matplotlib.pyplot as plt 
 from matplotlib import colors
 
-from utils.beams import beam, beamNormal
+# from utils.beams import beam, beamNormal
+from beams import beam
 from utils.SIMP_utils import sparse_assem, optimality_criteria, density_filter, center_els, sensi_el
 
 # Start the timer
@@ -32,7 +32,7 @@ Emax=1.0 # Maximum young modulus of the material
 
 dirs = np.array([[0,-1], [0,1], [1,0]])
 positions = np.array([[61,30], [1,30], [30, 1]])
-nodes, mats, els, loads, found_nodes = beamNormal(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
+nodes, mats, els, loads = beam(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
 
 # Initialize the design variables
 change = 10 # Change in the design variable
@@ -97,6 +97,7 @@ for _ in range(niter):
 
     # Sensitivity analysis
     sensi_rho[:] = sensi_el(nodes, mats, els, UC)
+    # sensi_rho[:] = (np.dot(UC[els[:,-4:]].reshape(nx*ny,8),kloc) * UC[els[:,-4:]].reshape(nx*ny,8) ).sum(1)
     d_c[:] = (-penal*rho**(penal-1)*(Emax-Emin))*sensi_rho
     d_c[:] = density_filter(centers, r_min, rho, d_c)
 

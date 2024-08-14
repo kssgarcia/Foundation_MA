@@ -198,7 +198,7 @@ def sensi_el(nodes, mats, els, UC):
     """   
     sensi_number = []
     for el in range(len(els)):
-        params = tuple(mats[els[el, 2], :])
+        params = tuple(mats[els[el, 0], :])
         elcoor = nodes[els[el, -4:], 1:3]
         kloc, _ = uel.elast_quad4(elcoor, params)
         node_el = els[el, -4:]
