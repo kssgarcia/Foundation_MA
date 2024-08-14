@@ -48,8 +48,8 @@ def optimization(n_elem):
     assem_op, bc_array, neq = ass.DME(nodes[:, -2:], els, ndof_el_max=8) 
 
     # Foundation initialization
-    els_nodes = els[:,-4:]
-    found_elements = [i for i, el in enumerate(els_nodes) if any(node in el for node in found_nodes)]
+    # els_nodes = els[:,-4:]
+    # found_elements = [i for i, el in enumerate(els_nodes) if any(node in el for node in found_nodes)]
     # rho[found_elements] = 1
 
     # Update material properties

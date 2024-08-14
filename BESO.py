@@ -2,27 +2,29 @@
 import matplotlib.pyplot as plt # Package for plotting
 import numpy as np # Package for scientific computing
 
-from beams import beam 
+from utils.beams import beam, beamNormal
 from utils.BESO_utils import is_equilibrium, preprocessing, postprocessing, protect_els, del_node, volume, sensitivity_els, adjacency_nodes, center_els, sensitivity_nodes, sensitivity_filter
 # Solidspy 1.1.0
 import solidspy.postprocesor as pos # SolidsPy package for postprocessing
 np.seterr(divide='ignore', invalid='ignore') # Ignore division by zero error
 
-length = 20
-height = 10
-nx = 50
-ny= 20
+length = 60
+height = 60
+nx = n_elem
+ny= n_elem
+niter = 60
+ER = 0.005 # Removal ratio increment
+t = 0.0001 # Threshold for error
+Emin=1e-9 # Minimum young modulus of the material
+Emax=1.0 # Maximum young modulus of the material
+
 dirs = np.array([[0,-1]])
-positions = np.array([[21,10]])
-nodes, mats, els, loads, BC = beam(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions, n=1)
+positions = np.array([[61,30]])
+nodes, mats, els, loads, found_nodes = beamNormal(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
 
 elsI, nodesI = np.copy(els), np.copy(nodes) # Copy mesh
 IBC, UG, _ = preprocessing(nodes, mats, els, loads) # Calculate boundary conditions and global stiffness matrix
 UCI, E_nodesI, S_nodesI = postprocessing(nodes, mats[:,:2], els, IBC, UG) # Calculate displacements, strains and stresses
-
-niter = 200
-ER = 0.005 # Removal ratio increment
-t = 0.0001 # Threshold for error
 
 r_min = np.linalg.norm(nodes[0,1:3] - nodes[1,1:3]) * 1 # Radius for the sensitivity filter
 adj_nodes = adjacency_nodes(nodes, els) # Adjacency nodes

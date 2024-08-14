@@ -32,7 +32,9 @@ Emax=1.0 # Maximum young modulus of the material
 
 dirs = np.array([[0,-1]])
 positions = np.array([[61,30]])
-nodes, mats, els, loads, found_nodes = beam(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
+# dirs = np.array([[0,-1], [0,1], [1,0]])
+# positions = np.array([[61,30], [1,30], [30, 1]])
+nodes, mats, els, loads, found_nodes = beamNormal(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
 
 # Initialize the design variables
 change = 10 # Change in the design variable
@@ -55,7 +57,7 @@ rho[found_elements] = 1
 
 # Update material properties
 mask_foundation = rho > 0.95
-mask_soil = rho < 0.6
+mask_soil = rho < 0.95
 
 mats[mask_foundation, 0] = Emax  # Update Young's modulus
 mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
@@ -85,6 +87,7 @@ for _ in range(niter):
 
     # Change density 
     mats[:,2] = Emin+rho**penal*(Emax-Emin)
+    # mats[:,2] = rho
 
     # System assembly
     stiff_mat = sparse_assem(els, mats, neq, assem_op, nodes)
@@ -104,30 +107,23 @@ for _ in range(niter):
     rho_old[:] = rho
     rho[:], g = optimality_criteria(nx, ny, rho, d_c, g)
 
-    mask_foundation = rho >= 0.95
-    mask_soil = rho < 0.95
-    print(rho.sum(), rho_old.sum())
-    print(np.count_nonzero(mask_foundation))
-    print(np.count_nonzero(mask_soil))
+    # mask_foundation = rho >= 0.95
+    # mask_soil = rho < 0.95
+    # print(rho.sum(), rho_old.sum())
+    # print(np.count_nonzero(mask_foundation))
+    # print(np.count_nonzero(mask_soil))
 
-    # Update values
-    mats[mask_foundation, 0] = Emax  # Update Young's modulus
-    mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
+    # # Update values
+    # mats[mask_foundation, 0] = Emax  # Update Young's modulus
+    # mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
 
-    mats[mask_soil, 0] = Emin  # Update Young's modulus
-    mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
+    # mats[mask_soil, 0] = Emin  # Update Young's modulus
+    # mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
 
     # Compute the change
     change = np.linalg.norm(rho.reshape(nx*ny,1)-rho_old.reshape(nx*ny,1),np.inf)
     print(change)
 
-plt.ion() 
-fig,ax = plt.subplots()
-ax.imshow(-rho.reshape(n_elem,n_elem), cmap='gray', interpolation='none',norm=colors.Normalize(vmin=-1,vmax=0))
-ax.set_title('Predicted')
-fig.show()
-
-# %%
 aux.deformacionFill(nodes , els , UC , factor = 1.0 , cmap='cividis')
 
 plt.ion() 

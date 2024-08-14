@@ -40,7 +40,7 @@ def optimization(n_elem):
     # Design variables initialization
     change = 10 # Change in the design variable
     g = 0 # Constraint
-    rho = 0.5 * np.ones(ny*nx, dtype=float) # Initialize the density
+    rho = 0.4 * np.ones(ny*nx, dtype=float) # Initialize the density
     sensi_rho = np.ones(ny*nx) # Initialize the sensitivity
     rho_old = rho.copy() # Initialize the density history
     d_c = np.ones(ny*nx) # Initialize the design change
@@ -53,8 +53,8 @@ def optimization(n_elem):
     rho[found_elements] = 1
 
     # Update material properties
-    mask_foundation = rho > 0.95
-    mask_soil = rho < 0.6
+    mask_foundation = rho >= 0.95
+    mask_soil = rho < 0.95
 
     mats[mask_foundation, 0] = Emax  # Update Young's modulus
     mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio

@@ -82,16 +82,17 @@ def optimality_criteria(nelx, nely, rho, d_c, g):
     l1=0
     l2=1e9
     move=0.2
+    d_v = np.ones(nely*nelx)
     rho_new=np.zeros(nelx*nely)
     while (l2-l1)/(l1+l2)>1e-3: 
         lmid=0.5*(l2+l1)
-        rho_new[:]= np.maximum(0.0,np.maximum(rho-move,np.minimum(1.0,np.minimum(rho+move,rho*np.sqrt(-d_c/lmid)))))
-        gt=g+np.sum(((rho_new-rho)))
+        rho_new[:]= np.maximum(0.0,np.maximum(rho-move,np.minimum(1.0,np.minimum(rho+move,rho*np.sqrt(-d_c/d_v/lmid)))))
+        gt=g+np.sum((rho_new-rho))
         if gt>0 :
             l1=lmid
         else:
             l2=lmid
-    return (rho_new, gt)
+    return (rho_new,gt)
 
 
 
@@ -208,5 +209,38 @@ def sensi_el(nodes, mats, els, UC):
         a_i = U_el.T.dot(kloc.dot(U_el))[0,0]
         sensi_number.append(a_i)
     sensi_number = np.array(sensi_number)
+
+    return sensi_number
+
+def sensitivity_els(nodes, mats, els, UC, nx, ny):
+    """
+    Calculate the sensitivity number for each element.
+    
+    Parameters
+    ----------
+    nodes : ndarray
+        Array with models nodes
+    mats : ndarray
+        Array with models materials
+    els : ndarray
+        Array with models elements
+    UC : ndarray
+        Displacements at nodes
+    nx : float
+        Number of elements in x direction.
+    ny : float
+        Number of elements in y direction.
+
+    Returns
+    -------
+    sensi_number : ndarray
+        Sensitivity number for each element.
+    """   
+    sensi_number = np.zeros(els.shape[0])
+    params = tuple(mats[1, :])
+    elcoor = nodes[els[1, -4:], 1:3]
+    kloc, _ = uel.elast_quad4(elcoor, params)
+
+    sensi_number = (np.dot(UC[els[:,-4:]].reshape(nx*ny,8),kloc) * UC[els[:,-4:]].reshape(nx*ny,8) ).sum(1)
 
     return sensi_number
