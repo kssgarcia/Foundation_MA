@@ -24,10 +24,10 @@ def optimization(n_elem):
     nx = n_elem
     ny= n_elem
     penal = 3 
-    Emin=1e-9 # Minimum young modulus of the material
-    Emax=1.0 # Maximum young modulus of the material
-    # Emax=2e9 
-    # Emin=0.0049 
+    # Emin=1e-9 # Minimum young modulus of the material
+    # Emax=1.0 # Maximum young modulus of the material
+    Emax=2e9 
+    Emin=0.0049 
     poisson_max = 0.15
     poisson_min = 0.28
 
@@ -48,18 +48,18 @@ def optimization(n_elem):
     centers = center_els(nodes, els) # Calculate centers
     assem_op, bc_array, neq = ass.DME(nodes[:, -2:], els, ndof_el_max=8) 
 
-    # # Foundation initialization
-    # found_elements = [i for i, el in enumerate(els[:,-4:]) if any(node in el for node in found_nodes)]
-    # rho[found_elements] = 1
+    # Foundation initialization
+    found_elements = [i for i, el in enumerate(els[:,-4:]) if any(node in el for node in found_nodes)]
+    rho[found_elements] = 1
 
-    # # Update material properties
-    # mask_foundation = rho > 0.95
-    # mask_soil = rho < 0.6
+    # Update material properties
+    mask_foundation = rho > 0.95
+    mask_soil = rho < 0.6
 
-    # mats[mask_foundation, 0] = Emax  # Update Young's modulus
-    # mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
-    # mats[mask_soil, 0] = Emin  # Update Young's modulus
-    # mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
+    mats[mask_foundation, 0] = Emax  # Update Young's modulus
+    mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
+    mats[mask_soil, 0] = Emin  # Update Young's modulus
+    mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
 
     plt.ion() 
     fig,ax = plt.subplots()
@@ -101,18 +101,18 @@ def optimization(n_elem):
         rho_old[:] = rho.copy()
         rho[:], g = optimality_criteria(nx, ny, rho, d_c, g)
 
-        # mask_foundation = rho >= 0.95
-        # mask_soil = rho < 0.95
-        # print(rho.sum(), rho_old.sum())
-        # print(np.count_nonzero(mask_foundation))
-        # print(np.count_nonzero(mask_soil))
+        mask_foundation = rho >= 0.95
+        mask_soil = rho < 0.95
+        print(rho.sum(), rho_old.sum())
+        print(np.count_nonzero(mask_foundation))
+        print(np.count_nonzero(mask_soil))
 
-        # # Update values
-        # mats[mask_foundation, 0] = Emax  # Update Young's modulus
-        # mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
+        # Update values
+        mats[mask_foundation, 0] = Emax  # Update Young's modulus
+        mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
 
-        # mats[mask_soil, 0] = Emin  # Update Young's modulus
-        # mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
+        mats[mask_soil, 0] = Emin  # Update Young's modulus
+        mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
 
         # Compute the change
         change = np.linalg.norm(rho.reshape(nx*ny,1)-rho_old.reshape(nx*ny,1),np.inf)

@@ -1,21 +1,24 @@
 # %%
 import time
+import random
 import numpy as np
 from scipy.sparse.linalg import spsolve
-import solidspy.postprocesor as pos 
 import solidspy.assemutil as ass # Solidspy 1.1.0
-import aux_functions as aux
+import solidspy.postprocesor as pos 
+import aux_functions as aux             # Rutinas externas al programa y creadas para la automatización de algunas tareas.
 
 import matplotlib.pyplot as plt 
 from matplotlib import colors
 
-from utils.beams import beam 
+from utils.beams import beam
+# from SIMP_utils import 
 from utils.SIMP_utils import sparse_assem, optimality_criteria, density_filter, center_els, sensi_el
 
 # Start the timer
 start_time = time.time()
 
 np.seterr(divide='ignore', invalid='ignore')
+
 
 def optimization(n_elem):
     # Initialize variables
@@ -28,8 +31,6 @@ def optimization(n_elem):
     Emin=0.0049 
     v_max = 0.15
     v_min = 0.28
-    poisson_max = 0.15
-    poisson_min = 0.28
 
     dirs = np.array([[0,-1]])
     positions = np.array([[61,30]])
@@ -49,28 +50,28 @@ def optimization(n_elem):
     # Foundation initialization
     els_nodes = els[:,-4:]
     found_elements = [i for i, el in enumerate(els_nodes) if any(node in el for node in found_nodes)]
-    rho[found_elements] = 1
+    # rho[found_elements] = 1
 
     # Update material properties
-    density_gt_09 = rho > 0.95
-    density_lt_01 = rho < 0.6
+    # density_gt_09 = rho > 0.95
+    # density_lt_01 = rho < 0.6
 
-    mats[density_gt_09, 0] = Emax  # Update Young's modulus
-    mats[density_gt_09, 1] = poisson_max  # Update Poisson's ratio
-    mats[density_lt_01, 0] = Emin  # Update Young's modulus
-    mats[density_lt_01, 1] = poisson_min  # Update Poisson's ratio
+    # mats[density_gt_09, 0] = Emax  # Update Young's modulus
+    # mats[density_gt_09, 1] = poisson_max  # Update Poisson's ratio
+    # mats[density_lt_01, 0] = Emin  # Update Young's modulus
+    # mats[density_lt_01, 1] = poisson_min  # Update Poisson's ratio
 
-    plt.ion() 
-    fig,ax = plt.subplots()
-    ax.imshow(np.flipud(-mats[:,0].reshape(nx,ny)), cmap='gray', interpolation='none',norm=colors.Normalize(vmin=-1,vmax=0))
-    ax.set_title('Mats density initial')
-    fig.show()
+    # plt.ion() 
+    # fig,ax = plt.subplots()
+    # ax.imshow(np.flipud(-mats[:,0].reshape(nx,ny)), cmap='gray', interpolation='none',norm=colors.Normalize(vmin=-1,vmax=0))
+    # ax.set_title('Mats density initial')
+    # fig.show()
 
-    plt.ion() 
-    fig,ax = plt.subplots()
-    ax.imshow(np.flipud(-rho.reshape(nx,ny)), cmap='gray', interpolation='none',norm=colors.Normalize(vmin=-1,vmax=0))
-    ax.set_title('Rho initial')
-    fig.show()
+    # plt.ion() 
+    # fig,ax = plt.subplots()
+    # ax.imshow(np.flipud(-rho.reshape(nx,ny)), cmap='gray', interpolation='none',norm=colors.Normalize(vmin=-1,vmax=0))
+    # ax.set_title('Rho initial')
+    # fig.show()
 
     iter = 0
     for _ in range(100):

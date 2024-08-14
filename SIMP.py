@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 
 # from utils.beams import beam, beamNormal
-from beams import beam
+from utils.beams import beam, beamNormal
 from utils.SIMP_utils import sparse_assem, optimality_criteria, density_filter, center_els, sensi_el
 
 # Start the timer
@@ -30,9 +30,9 @@ penal = 3 # Penalization factor
 Emin=1e-9 # Minimum young modulus of the material
 Emax=1.0 # Maximum young modulus of the material
 
-dirs = np.array([[0,-1], [0,1], [1,0]])
-positions = np.array([[61,30], [1,30], [30, 1]])
-nodes, mats, els, loads = beam(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
+dirs = np.array([[0,-1]])
+positions = np.array([[61,30]])
+nodes, mats, els, loads, found_nodes = beam(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
 
 # Initialize the design variables
 change = 10 # Change in the design variable
@@ -46,21 +46,21 @@ r_min = np.linalg.norm(nodes[0,1:3] - nodes[1,1:3]) * 4 # Radius for the sensiti
 centers = center_els(nodes, els) # Calculate centers
 assem_op, bc_array, neq = ass.DME(nodes[:, -2:], els, ndof_el_max=8) 
 
-# poisson_max = 0.15
-# poisson_min = 0.28
+poisson_max = 0.15
+poisson_min = 0.28
 
-# # Foundation initialization
-# found_elements = [i for i, el in enumerate(els[:,-4:]) if any(node in el for node in found_nodes)]
-# rho[found_elements] = 1
+# Foundation initialization
+found_elements = [i for i, el in enumerate(els[:,-4:]) if any(node in el for node in found_nodes)]
+rho[found_elements] = 1
 
-# # Update material properties
-# mask_foundation = rho > 0.95
-# mask_soil = rho < 0.6
+# Update material properties
+mask_foundation = rho > 0.95
+mask_soil = rho < 0.6
 
-# mats[mask_foundation, 0] = Emax  # Update Young's modulus
-# mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
-# mats[mask_soil, 0] = Emin  # Update Young's modulus
-# mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
+mats[mask_foundation, 0] = Emax  # Update Young's modulus
+mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
+mats[mask_soil, 0] = Emin  # Update Young's modulus
+mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
 
 plt.ion() 
 fig,ax = plt.subplots()
@@ -97,7 +97,6 @@ for _ in range(niter):
 
     # Sensitivity analysis
     sensi_rho[:] = sensi_el(nodes, mats, els, UC)
-    # sensi_rho[:] = (np.dot(UC[els[:,-4:]].reshape(nx*ny,8),kloc) * UC[els[:,-4:]].reshape(nx*ny,8) ).sum(1)
     d_c[:] = (-penal*rho**(penal-1)*(Emax-Emin))*sensi_rho
     d_c[:] = density_filter(centers, r_min, rho, d_c)
 
@@ -105,18 +104,18 @@ for _ in range(niter):
     rho_old[:] = rho
     rho[:], g = optimality_criteria(nx, ny, rho, d_c, g)
 
-    # mask_foundation = rho >= 0.95
-    # mask_soil = rho < 0.95
-    # print(rho.sum(), rho_old.sum())
-    # print(np.count_nonzero(mask_foundation))
-    # print(np.count_nonzero(mask_soil))
+    mask_foundation = rho >= 0.95
+    mask_soil = rho < 0.95
+    print(rho.sum(), rho_old.sum())
+    print(np.count_nonzero(mask_foundation))
+    print(np.count_nonzero(mask_soil))
 
-    # # Update values
-    # mats[mask_foundation, 0] = Emax  # Update Young's modulus
-    # mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
+    # Update values
+    mats[mask_foundation, 0] = Emax  # Update Young's modulus
+    mats[mask_foundation, 1] = poisson_max  # Update Poisson's ratio
 
-    # mats[mask_soil, 0] = Emin  # Update Young's modulus
-    # mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
+    mats[mask_soil, 0] = Emin  # Update Young's modulus
+    mats[mask_soil, 1] = poisson_min  # Update Poisson's ratio
 
     # Compute the change
     change = np.linalg.norm(rho.reshape(nx*ny,1)-rho_old.reshape(nx*ny,1),np.inf)

@@ -196,6 +196,7 @@ def sensi_el(nodes, mats, els, UC):
     sensi_number : ndarray
         Sensitivity number for each element.
     """   
+
     sensi_number = []
     for el in range(len(els)):
         params = tuple(mats[els[el, 0], :])
@@ -204,7 +205,7 @@ def sensi_el(nodes, mats, els, UC):
         node_el = els[el, -4:]
         U_el = UC[node_el]
         U_el = np.reshape(U_el, (8,1))
-        a_i = U_el.T.dot(kloc.dot(U_el))[0,0] - (np.mean(elcoor[:1]) - 30)
+        a_i = U_el.T.dot(kloc.dot(U_el))[0,0]
         sensi_number.append(a_i)
     sensi_number = np.array(sensi_number)
 
