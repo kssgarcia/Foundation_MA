@@ -1,8 +1,6 @@
 import numpy as np
-import solidspy.postprocesor as pos 
 import solidspy.uelutil as uel 
 from scipy.sparse import coo_matrix
-from scipy.sparse.linalg import spsolve
 
 from scipy.spatial.distance import cdist
 
@@ -37,7 +35,7 @@ def sparse_assem(elements, mats, neq, assem_op, nodes):
     stiff_vals = []
     nels = elements.shape[0]
     for ele in range(nels):
-        params = tuple(mats[elements[ele, 2], :])
+        params = tuple(mats[elements[ele, 0], :])
         elcoor = nodes[elements[ele, -4:], 1:3]
         kloc, _ = uel.elast_quad4(elcoor, params)
         kloc_ = kloc * mats[elements[ele, 0], 2]
@@ -94,6 +92,8 @@ def optimality_criteria(nelx, nely, rho, d_c, g):
         else:
             l2=lmid
     return (rho_new, gt)
+
+
 
 
 def volume(els, length, height, nx, ny):
