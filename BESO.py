@@ -24,7 +24,6 @@ elsI, nodesI = np.copy(els), np.copy(nodes) # Copy mesh
 IBC, UG, _ = preprocessing(nodes, mats, els, loads) # Calculate boundary conditions and global stiffness matrix
 UCI, E_nodesI, S_nodesI = postprocessing(nodes, mats[:,:2], els, IBC, UG) # Calculate displacements, strains and stresses
 
-
 r_min = np.linalg.norm(nodes[0,1:3] - nodes[1,1:3]) * 1 # Radius for the sensitivity filter
 adj_nodes = adjacency_nodes(nodes, els) # Adjacency nodes
 centers = center_els(nodes, els) # Centers of elements
