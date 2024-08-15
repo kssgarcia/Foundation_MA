@@ -95,17 +95,21 @@ def beamSimp(L=10, H=10, E=206.8e9, v=0.28, nx=20, ny=20, dirs=np.array([]), pos
 
     """
     x, y, els = pre.rect_grid(L, H, nx, ny)
+    print(x)
+    print(y)
     mats = np.zeros((els.shape[0], 3))
     mats[:] = [E,v,1]
     nodes = np.zeros(((nx + 1)*(ny + 1), 5))
     nodes[:, 0] = range((nx + 1)*(ny + 1))
     nodes[:, 1] = x
     nodes[:, 2] = y
-    # mask = (y==-H/2)
-    # nodes[mask, 3:] = -1
-    nodes[(x==-L/2), 3:] = -1
-    nodes[(x==L/2), 3:] = -1
-    nodes[(y==-H/2), 3:] = -1
+    # nodes[(x==-L/2), 3] = -1
+    # nodes[(x==L/2), 3] = -1
+    # nodes[(y==-H/2), 4] = -1
+
+    # 2 borders
+    nodes[(x==-L/2), 3] = -1
+    nodes[(y==-H/2), 4] = -1
 
     loads = np.zeros((dirs.shape[0], 3), dtype=int)
     node_index = nx*positions[:,0]+(positions[:,0]-positions[:,1])
