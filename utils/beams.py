@@ -95,6 +95,8 @@ def beamSimp(L=10, H=10, E=206.8e9, v=0.28, nx=20, ny=20, dirs=np.array([]), pos
 
     """
     x, y, els = pre.rect_grid(L, H, nx, ny)
+    print(x.shape)
+    print(y.shape)
     print(x)
     print(y)
     mats = np.zeros((els.shape[0], 3))

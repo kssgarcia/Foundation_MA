@@ -21,8 +21,8 @@ np.seterr(divide='ignore', invalid='ignore')
 # VARIABLES INITIALIZATION
 length = 60
 height = 120
-nx = 60
-ny = 120
+nx = 120
+ny = 180
 niter = 60
 Emin = 1
 Emax = 10
@@ -30,8 +30,8 @@ poisson_max = 0.3
 poisson_min = 0.3
 
 dirs = np.array([[0,-1]])
-positions = np.array([[121,61]])
-nodes, mats, els, loads, found_nodes = beamSimp(L=nx, H=ny, nx=length, ny=height, dirs=dirs, positions=positions)
+positions = np.array([[181,120]])
+nodes, mats, els, loads, found_nodes = beamSimp(L=length, H=height, nx=nx, ny=ny, dirs=dirs, positions=positions)
 
 change = 10
 sensi_number = 0.1*np.ones(ny*nx) 
